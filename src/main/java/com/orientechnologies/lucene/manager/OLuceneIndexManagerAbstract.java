@@ -19,8 +19,8 @@ package com.orientechnologies.lucene.manager;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -178,12 +178,12 @@ public abstract class OLuceneIndexManagerAbstract<V> extends OSharedResourceAdap
   public Iterator<Map.Entry<Object, V>> iterator() {
     try {
       IndexReader reader = getSearcher().getIndexReader();
-      return new OLuceneMapEntryIterator<Object, V>(reader, index);
+      return new OLuceneMapEntryIterator<>(reader, index);
 
     } catch (IOException e) {
       OLogManager.instance().error(this, "Error on creating iterator against Lucene index", e);
     }
-    return new HashSet<Map.Entry<Object, V>>().iterator();
+    return Collections.emptyIterator();
   }
 
   public void clear() {
@@ -215,7 +215,7 @@ public abstract class OLuceneIndexManagerAbstract<V> extends OSharedResourceAdap
     } catch (IOException e) {
       OLogManager.instance().error(this, "Error on closing Lucene index", e);
     } catch (Throwable e) {
-      e.printStackTrace();
+        OLogManager.instance().error(this, "Error on closing Lucene index", e);
     }
   }
 
@@ -231,7 +231,7 @@ public abstract class OLuceneIndexManagerAbstract<V> extends OSharedResourceAdap
   @Override
   public void load(ORID indexRid, String indexName, OIndexDefinition indexDefinition, OStreamSerializer valueSerializer,
       boolean isAutomatic) {
-
+      OLogManager.instance().error(this, "calling load index");
   }
 
   public void load(ORID indexRid, String indexName, OIndexDefinition indexDefinition, boolean isAutomatic, ODocument metadata) {
@@ -243,7 +243,8 @@ public abstract class OLuceneIndexManagerAbstract<V> extends OSharedResourceAdap
     IndexReader reader = null;
     IndexSearcher searcher = null;
     try {
-      reader = getSearcher().getIndexReader();
+        searcher = getSearcher();
+        reader = getSearcher().getIndexReader();
     } catch (IOException e) {
       OLogManager.instance().error(this, "Error on getting size of Lucene index", e);
     } finally {
@@ -251,6 +252,9 @@ public abstract class OLuceneIndexManagerAbstract<V> extends OSharedResourceAdap
         release(searcher);
       }
     }
+      if (reader == null) {
+          return 0;
+      }
     return reader.numDocs();
   }
 
@@ -383,7 +387,7 @@ public abstract class OLuceneIndexManagerAbstract<V> extends OSharedResourceAdap
     ODatabaseDocumentInternal database = getDatabase();
 
     final OAbstractPaginatedStorage storageLocalAbstract = (OAbstractPaginatedStorage) database.getStorage().getUnderlying();
-    Directory dir = null;
+    Directory dir;
     if (storageLocalAbstract instanceof OLocalPaginatedStorage) {
       String pathname = getIndexPath((OLocalPaginatedStorage) storageLocalAbstract);
       dir = NIOFSDirectory.open(new File(pathname).toPath());

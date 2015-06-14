@@ -18,6 +18,16 @@
 
 package com.orientechnologies.test;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.List;
+
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import com.orientechnologies.orient.core.command.script.OCommandScript;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OSchema;
@@ -25,15 +35,6 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.List;
 
 /**
  * Created by enricorisa on 08/10/14.
@@ -53,10 +54,15 @@ public class LuceneContextTest extends BaseLuceneTest {
     return "LuceneContext";
   }
 
-  public void testContext() {
+  public void testContext() throws Exception {
     InputStream stream = ClassLoader.getSystemResourceAsStream("testLuceneIndex.sql");
 
+    // cleanup:
+
+    databaseDocumentTx.command(new OCommandScript("sql",  "DELETE VERTEX Song")).execute();
+
     databaseDocumentTx.command(new OCommandScript("sql", getScriptFromStream(stream))).execute();
+
 
     List<ODocument> docs = databaseDocumentTx.query(new OSQLSynchQuery<ODocument>(
         "select *,$score from Song where [title] LUCENE \"(title:man)\""));
@@ -86,15 +92,17 @@ public class LuceneContextTest extends BaseLuceneTest {
   public void init() {
     initDB();
     OSchema schema = databaseDocumentTx.getMetadata().getSchema();
-    OClass v = schema.getClass("V");
-    OClass song = schema.createClass("Song");
-    song.setSuperClass(v);
-    song.createProperty("title", OType.STRING);
-    song.createProperty("author", OType.STRING);
 
-    databaseDocumentTx.command(new OCommandSQL("create index Song.title on Song (title) FULLTEXT ENGINE LUCENE")).execute();
-    databaseDocumentTx.command(new OCommandSQL("create index Song.author on Song (author) FULLTEXT ENGINE LUCENE")).execute();
+      if(!schema.existsClass("Song")) {
+          OClass song = schema.createClass("Song");
+          OClass v = schema.getClass("V");
+          song.setSuperClass(v);
+          song.createProperty("title", OType.STRING);
+          song.createProperty("author", OType.STRING);
 
+          databaseDocumentTx.command(new OCommandSQL("create index Song.title on Song (title) FULLTEXT ENGINE LUCENE")).execute();
+          databaseDocumentTx.command(new OCommandSQL("create index Song.author on Song (author) FULLTEXT ENGINE LUCENE")).execute();
+      }
   }
 
   @AfterClass
