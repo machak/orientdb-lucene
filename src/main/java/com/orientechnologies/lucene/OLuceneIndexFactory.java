@@ -16,6 +16,10 @@
 
 package com.orientechnologies.lucene;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.orientechnologies.lucene.index.OLuceneFullTextIndex;
 import com.orientechnologies.lucene.index.OLuceneSpatialIndex;
 import com.orientechnologies.lucene.manager.OLuceneFullTextIndexManager;
@@ -28,10 +32,6 @@ import com.orientechnologies.orient.core.index.OIndexFactory;
 import com.orientechnologies.orient.core.index.OIndexInternal;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.record.impl.ODocument;
-
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 public class OLuceneIndexFactory implements OIndexFactory {
 
@@ -67,10 +67,13 @@ public class OLuceneIndexFactory implements OIndexFactory {
     return ALGORITHMS;
   }
 
-  public OIndexInternal<?> createIndex(ODatabaseDocumentInternal oDatabaseRecord, String indexType, String algorithm,
-      String valueContainerAlgorithm, ODocument metadata, int version) throws OConfigurationException {
-    return createLuceneIndex(oDatabaseRecord, indexType, valueContainerAlgorithm, metadata);
-  }
+    @Override
+    public OIndexInternal<?> createIndex(String name, ODatabaseDocumentInternal database, String indexType, String algorithm,
+                                         String valueContainerAlgorithm, ODocument metadata, int version) throws OConfigurationException {
+        return createLuceneIndex(database, indexType, valueContainerAlgorithm, metadata);
+    }
+
+
 
   private OIndexInternal<?> createLuceneIndex(ODatabaseDocumentInternal oDatabaseRecord, String indexType,
       String valueContainerAlgorithm, ODocument metadata) {

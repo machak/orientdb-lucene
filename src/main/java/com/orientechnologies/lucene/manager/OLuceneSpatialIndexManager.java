@@ -16,6 +16,33 @@
 
 package com.orientechnologies.lucene.manager;
 
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.document.Document;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.StoredField;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexableField;
+import org.apache.lucene.queries.function.ValueSource;
+import org.apache.lucene.search.Filter;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.spatial.SpatialStrategy;
+import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
+import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
+import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
+import org.apache.lucene.spatial.query.SpatialArgs;
+import org.apache.lucene.spatial.query.SpatialOperation;
+import org.apache.lucene.store.Directory;
+
 import com.orientechnologies.common.log.OLogManager;
 import com.orientechnologies.lucene.OLuceneIndexType;
 import com.orientechnologies.lucene.collections.LuceneResultSet;
@@ -29,36 +56,15 @@ import com.orientechnologies.orient.core.id.OContextualRecordId;
 import com.orientechnologies.orient.core.id.ORID;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndexCursor;
+import com.orientechnologies.orient.core.index.OIndexDefinition;
 import com.orientechnologies.orient.core.index.OIndexKeyCursor;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
+import com.orientechnologies.orient.core.serialization.serializer.stream.OStreamSerializer;
 import com.spatial4j.core.context.SpatialContext;
 import com.spatial4j.core.distance.DistanceUtils;
 import com.spatial4j.core.shape.Point;
 import com.spatial4j.core.shape.Shape;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.FieldType;
-import org.apache.lucene.document.StoredField;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.queries.function.ValueSource;
-import org.apache.lucene.search.*;
-import org.apache.lucene.spatial.SpatialStrategy;
-import org.apache.lucene.spatial.prefix.RecursivePrefixTreeStrategy;
-import org.apache.lucene.spatial.prefix.tree.GeohashPrefixTree;
-import org.apache.lucene.spatial.prefix.tree.SpatialPrefixTree;
-import org.apache.lucene.spatial.query.SpatialArgs;
-import org.apache.lucene.spatial.query.SpatialOperation;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.util.Version;
-
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 
 public class OLuceneSpatialIndexManager extends OLuceneIndexManagerAbstract {
 
@@ -74,11 +80,12 @@ public class OLuceneSpatialIndexManager extends OLuceneIndexManagerAbstract {
         this.strategy = new RecursivePrefixTreeStrategy(grid, "location");
     }
 
+
+
     @Override
     public IndexWriter openIndexWriter(Directory directory, ODocument metadata) throws IOException {
         Analyzer analyzer = getAnalyzer(metadata);
-        Version version = getLuceneVersion(metadata);
-        IndexWriterConfig iwc = new IndexWriterConfig(version, analyzer);
+        IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
         iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
         return new IndexWriter(directory, iwc);
     }
@@ -86,8 +93,7 @@ public class OLuceneSpatialIndexManager extends OLuceneIndexManagerAbstract {
     @Override
     public IndexWriter createIndexWriter(Directory directory, ODocument metadata) throws IOException {
         Analyzer analyzer = getAnalyzer(metadata);
-        Version version = getLuceneVersion(metadata);
-        IndexWriterConfig iwc = new IndexWriterConfig(version, analyzer);
+        IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
         iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
         return new IndexWriter(directory, iwc);
     }
@@ -245,7 +251,8 @@ public class OLuceneSpatialIndexManager extends OLuceneIndexManagerAbstract {
     private Document newGeoDocument(OIdentifiable oIdentifiable, Shape shape) {
 
         FieldType ft = new FieldType();
-        ft.setIndexed(true);
+
+        // ft.setIndexed(true);
         ft.setStored(true);
 
         Document doc = new Document();

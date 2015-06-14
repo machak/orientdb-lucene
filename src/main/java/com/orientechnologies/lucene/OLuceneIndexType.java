@@ -16,23 +16,33 @@
 
 package com.orientechnologies.lucene;
 
-import com.orientechnologies.lucene.manager.OLuceneIndexManagerAbstract;
-import com.orientechnologies.orient.core.db.record.OIdentifiable;
-import com.orientechnologies.orient.core.index.OCompositeKey;
-import com.orientechnologies.orient.core.index.OIndexDefinition;
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.document.*;
-import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
-import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
-import org.apache.lucene.search.*;
-import org.apache.lucene.util.Version;
-
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.document.DoubleField;
+import org.apache.lucene.document.Field;
+import org.apache.lucene.document.FloatField;
+import org.apache.lucene.document.IntField;
+import org.apache.lucene.document.LongField;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.apache.lucene.queryparser.classic.QueryParser;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.NumericRangeQuery;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.TermQuery;
+
+import com.orientechnologies.lucene.manager.OLuceneIndexManagerAbstract;
+import com.orientechnologies.orient.core.db.record.OIdentifiable;
+import com.orientechnologies.orient.core.index.OCompositeKey;
+import com.orientechnologies.orient.core.index.OIndexDefinition;
 
 /**
  * Created by enricorisa on 21/03/14.
@@ -116,7 +126,7 @@ public class OLuceneIndexType {
         return booleanQuery;
     }
 
-    public static Query createFullQuery(OIndexDefinition index, Object key, Analyzer analyzer, Version version) throws ParseException {
+    public static Query createFullQuery(OIndexDefinition index, Object key, Analyzer analyzer) throws ParseException {
 
         String query = "";
         if (key instanceof OCompositeKey) {
@@ -133,18 +143,18 @@ public class OLuceneIndexType {
             query = key.toString();
         }
 
-        return getQueryParser(index, query, analyzer, version);
+        return getQueryParser(index, query, analyzer);
 
     }
 
-    protected static Query getQueryParser(OIndexDefinition index, String key, Analyzer analyzer, Version version)
+    protected static Query getQueryParser(OIndexDefinition index, String key, Analyzer analyzer)
             throws ParseException {
         QueryParser queryParser;
         if ((key).startsWith("(")) {
-            queryParser = new QueryParser(version, "", analyzer);
+            queryParser = new QueryParser("", analyzer);
 
         } else {
-            queryParser = new MultiFieldQueryParser(version, index.getFields().toArray(new String[index.getFields().size()]), analyzer);
+            queryParser = new MultiFieldQueryParser(index.getFields().toArray(new String[index.getFields().size()]), analyzer);
         }
 
         return queryParser.parse(key);

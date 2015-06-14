@@ -16,16 +16,10 @@
 
 package com.orientechnologies.lucene.manager;
 
-import com.orientechnologies.lucene.OLuceneIndexType;
-import com.orientechnologies.lucene.collections.LuceneResultSet;
-import com.orientechnologies.lucene.collections.OFullTextCompositeKey;
-import com.orientechnologies.lucene.query.QueryContext;
-import com.orientechnologies.orient.core.command.OCommandContext;
-import com.orientechnologies.orient.core.db.record.OIdentifiable;
-import com.orientechnologies.orient.core.id.OContextualRecordId;
-import com.orientechnologies.orient.core.id.ORID;
-import com.orientechnologies.orient.core.index.*;
-import com.orientechnologies.orient.core.record.impl.ODocument;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Set;
+
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -36,11 +30,21 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.util.Version;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Set;
+import com.orientechnologies.lucene.OLuceneIndexType;
+import com.orientechnologies.lucene.collections.LuceneResultSet;
+import com.orientechnologies.lucene.collections.OFullTextCompositeKey;
+import com.orientechnologies.lucene.query.QueryContext;
+import com.orientechnologies.orient.core.command.OCommandContext;
+import com.orientechnologies.orient.core.db.record.OIdentifiable;
+import com.orientechnologies.orient.core.id.OContextualRecordId;
+import com.orientechnologies.orient.core.id.ORID;
+import com.orientechnologies.orient.core.index.OCompositeKey;
+import com.orientechnologies.orient.core.index.OIndexCursor;
+import com.orientechnologies.orient.core.index.OIndexEngineException;
+import com.orientechnologies.orient.core.index.OIndexException;
+import com.orientechnologies.orient.core.index.OIndexKeyCursor;
+import com.orientechnologies.orient.core.record.impl.ODocument;
 
 public class OLuceneFullTextIndexManager extends OLuceneIndexManagerAbstract {
 
@@ -53,8 +57,7 @@ public class OLuceneFullTextIndexManager extends OLuceneIndexManagerAbstract {
   public IndexWriter createIndexWriter(Directory directory, ODocument metadata) throws IOException {
 
     Analyzer analyzer = getAnalyzer(metadata);
-    Version version = getLuceneVersion(metadata);
-    IndexWriterConfig iwc = new IndexWriterConfig(version, analyzer);
+    IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
     iwc.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
 
     facetManager = new OLuceneFacetManager(this, metadata);
@@ -65,13 +68,14 @@ public class OLuceneFullTextIndexManager extends OLuceneIndexManagerAbstract {
   @Override
   public IndexWriter openIndexWriter(Directory directory, ODocument metadata) throws IOException {
     Analyzer analyzer = getAnalyzer(metadata);
-    Version version = getLuceneVersion(metadata);
-    IndexWriterConfig iwc = new IndexWriterConfig(version, analyzer);
+    IndexWriterConfig iwc = new IndexWriterConfig(analyzer);
     iwc.setOpenMode(IndexWriterConfig.OpenMode.APPEND);
     return new IndexWriter(directory, iwc);
   }
 
-  @Override
+
+
+    @Override
   public void init() {
 
   }
@@ -98,9 +102,9 @@ public class OLuceneFullTextIndexManager extends OLuceneIndexManagerAbstract {
 
   @Override
   public Object get(Object key) {
-    Query q = null;
+    Query q;
     try {
-      q = OLuceneIndexType.createFullQuery(index, key, mgrWriter.getIndexWriter().getAnalyzer(), getLuceneVersion(metadata));
+      q = OLuceneIndexType.createFullQuery(index, key, mgrWriter.getIndexWriter().getAnalyzer());
       OCommandContext context = null;
       if (key instanceof OFullTextCompositeKey) {
         context = ((OFullTextCompositeKey) key).getContext();

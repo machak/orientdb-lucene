@@ -16,17 +16,22 @@
 
 package com.orientechnologies.lucene;
 
+import java.io.IOException;
+
+import org.apache.lucene.search.IndexSearcher;
+
 import com.orientechnologies.common.concur.resource.OSharedResourceAdaptiveExternal;
 import com.orientechnologies.lucene.manager.OLuceneIndexManagerAbstract;
 import com.orientechnologies.orient.core.config.OGlobalConfiguration;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.id.ORID;
-import com.orientechnologies.orient.core.index.*;
+import com.orientechnologies.orient.core.index.OIndex;
+import com.orientechnologies.orient.core.index.OIndexCursor;
+import com.orientechnologies.orient.core.index.OIndexDefinition;
+import com.orientechnologies.orient.core.index.OIndexEngine;
+import com.orientechnologies.orient.core.index.OIndexKeyCursor;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.serialization.serializer.stream.OStreamSerializer;
-import org.apache.lucene.search.IndexSearcher;
-
-import java.io.IOException;
 
 public class OLuceneIndexEngine<V> extends OSharedResourceAdaptiveExternal implements OIndexEngine<V> {
 
@@ -53,13 +58,11 @@ public class OLuceneIndexEngine<V> extends OSharedResourceAdaptiveExternal imple
     lucene.flush();
   }
 
-  @Override
-  public void create(String indexName, OIndexDefinition indexDefinition, String clusterIndexName,
-      OStreamSerializer valueSerializer, boolean isAutomatic) {
+    @Override
+    public void create(OIndexDefinition indexDefinition, String clusterIndexName, OStreamSerializer valueSerializer, boolean isAutomatic) {
+        lucene.createIndex(clusterIndexName, indexDefinition, clusterIndexName, valueSerializer, isAutomatic, indexMetadata);
+    }
 
-    lucene.createIndex(indexName, indexDefinition, clusterIndexName, valueSerializer, isAutomatic, indexMetadata);
-
-  }
 
   @Override
   public void delete() {

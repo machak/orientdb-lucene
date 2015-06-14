@@ -16,6 +16,14 @@
 
 package com.orientechnologies.lucene.index;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+import org.apache.lucene.search.IndexSearcher;
+
 import com.orientechnologies.common.listener.OProgressListener;
 import com.orientechnologies.lucene.LuceneTxOperations;
 import com.orientechnologies.lucene.OLuceneIndex;
@@ -25,13 +33,6 @@ import com.orientechnologies.orient.core.index.OIndexDefinition;
 import com.orientechnologies.orient.core.index.OIndexMultiValues;
 import com.orientechnologies.orient.core.index.OIndexNotUnique;
 import com.orientechnologies.orient.core.record.impl.ODocument;
-import org.apache.lucene.search.IndexSearcher;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 public class OLuceneIndexNotUnique extends OIndexNotUnique implements OLuceneIndex {
 
@@ -191,7 +192,7 @@ public class OLuceneIndexNotUnique extends OIndexNotUnique implements OLuceneInd
   }
 
   @Override
-  protected Object getCollatingValue(Object key) {
+  public Object getCollatingValue(Object key) {
     return key;
   }
 

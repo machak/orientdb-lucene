@@ -18,14 +18,13 @@
 
 package com.orientechnologies.lucene.manager;
 
-import com.orientechnologies.lucene.query.QueryContext;
-import com.orientechnologies.lucene.utils.OLuceneIndexUtils;
-import com.orientechnologies.orient.core.db.ODatabaseDocumentInternal;
-import com.orientechnologies.orient.core.index.OCompositeKey;
-import com.orientechnologies.orient.core.index.OIndexEngineException;
-import com.orientechnologies.orient.core.record.impl.ODocument;
-import com.orientechnologies.orient.core.storage.impl.local.OAbstractPaginatedStorage;
-import com.orientechnologies.orient.core.storage.impl.local.paginated.OLocalPaginatedStorage;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+
 import org.apache.lucene.document.Document;
 import org.apache.lucene.facet.FacetField;
 import org.apache.lucene.facet.FacetsConfig;
@@ -38,12 +37,14 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.NIOFSDirectory;
 import org.apache.lucene.store.RAMDirectory;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import com.orientechnologies.lucene.query.QueryContext;
+import com.orientechnologies.lucene.utils.OLuceneIndexUtils;
+import com.orientechnologies.orient.core.db.ODatabaseDocumentInternal;
+import com.orientechnologies.orient.core.index.OCompositeKey;
+import com.orientechnologies.orient.core.index.OIndexEngineException;
+import com.orientechnologies.orient.core.record.impl.ODocument;
+import com.orientechnologies.orient.core.storage.impl.local.OAbstractPaginatedStorage;
+import com.orientechnologies.orient.core.storage.impl.local.paginated.OLocalPaginatedStorage;
 
 /**
  * Created by Enrico Risa on 22/04/15.
@@ -92,7 +93,7 @@ public class OLuceneFacetManager {
     final OAbstractPaginatedStorage storageLocalAbstract = (OAbstractPaginatedStorage) database.getStorage().getUnderlying();
     if (storageLocalAbstract instanceof OLocalPaginatedStorage) {
       String pathname = getIndexFacetPath((OLocalPaginatedStorage) storageLocalAbstract);
-      dir = NIOFSDirectory.open(new File(pathname));
+      dir = NIOFSDirectory.open(new File(pathname).toPath());
     } else {
       dir = new RAMDirectory();
     }
