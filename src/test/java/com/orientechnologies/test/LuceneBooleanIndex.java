@@ -18,17 +18,18 @@
 
 package com.orientechnologies.test;
 
+import java.util.List;
+
+import org.junit.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OSchema;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.orientechnologies.orient.core.sql.query.OSQLSynchQuery;
-import org.junit.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-
-import java.util.List;
 
 /**
  * Created by Enrico Risa on 29/04/15.
@@ -45,12 +46,14 @@ public class LuceneBooleanIndex extends BaseLuceneTest {
     initDB();
     OSchema schema = databaseDocumentTx.getMetadata().getSchema();
     OClass v = schema.getClass("V");
+      if(!schema.existsClass("Person")){
     OClass song = schema.createClass("Person");
     song.setSuperClass(v);
     song.createProperty("isDeleted", OType.BOOLEAN);
 
     databaseDocumentTx.command(new OCommandSQL("create index Person.isDeleted on Person (isDeleted) FULLTEXT ENGINE LUCENE"))
         .execute();
+      }
 
   }
 
