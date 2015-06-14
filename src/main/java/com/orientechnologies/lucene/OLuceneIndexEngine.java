@@ -35,6 +35,7 @@ import com.orientechnologies.orient.core.serialization.serializer.stream.OStream
 
 public class OLuceneIndexEngine<V> extends OSharedResourceAdaptiveExternal implements OIndexEngine<V> {
 
+  public static final int INDEX_VERSION = 1;
   private final String                  indexType;
   protected OLuceneIndexManagerAbstract lucene;
   protected OIndex                      indexManaged;
@@ -185,7 +186,7 @@ public class OLuceneIndexEngine<V> extends OSharedResourceAdaptiveExternal imple
 
   @Override
   public int getVersion() {
-    return 0;
+    return INDEX_VERSION;
   }
 
   public void setManagedIndex(OIndex index) {

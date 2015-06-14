@@ -18,18 +18,18 @@
 
 package com.orientechnologies.test;
 
+import org.testng.Assert;
+import org.testng.annotations.AfterClass;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
+
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
-import com.orientechnologies.orient.core.metadata.schema.OClass;
-import com.orientechnologies.orient.core.metadata.schema.OSchema;
+import com.orientechnologies.orient.core.metadata.schema.OSchemaProxy;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.sql.OCommandSQL;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
-import org.testng.Assert;
-import org.testng.annotations.AfterClass;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
 
 /**
  * Created by enricorisa on 03/09/14.
@@ -47,18 +47,19 @@ public class GraphEmbeddedTest extends BaseLuceneTest {
     super(remote);
   }
 
-  @BeforeClass
-  public void init() {
-    initDB();
-    graph = new OrientGraph((ODatabaseDocumentTx) databaseDocumentTx, false);
-    OrientVertexType type = graph.createVertexType("City");
-    type.createProperty("latitude", OType.DOUBLE);
-    type.createProperty("longitude", OType.DOUBLE);
-    type.createProperty("name", OType.STRING);
-
-    databaseDocumentTx.command(new OCommandSQL("create index City.name on City (name) FULLTEXT ENGINE LUCENE")).execute();
-
-  }
+    @BeforeClass
+    public void init() {
+        initDB();
+        graph = new OrientGraph((ODatabaseDocumentTx) databaseDocumentTx, false);
+        final OSchemaProxy schema = graph.getRawGraph().getMetadata().getSchema();
+        if (!schema.existsClass("City")) {
+            OrientVertexType type = graph.createVertexType("City");
+            type.createProperty("latitude", OType.DOUBLE);
+            type.createProperty("longitude", OType.DOUBLE);
+            type.createProperty("name", OType.STRING);
+            databaseDocumentTx.command(new OCommandSQL("create index City.name on City (name) FULLTEXT ENGINE LUCENE")).execute();
+        }
+    }
 
   @AfterClass
   public void deInit() {
@@ -69,8 +70,8 @@ public class GraphEmbeddedTest extends BaseLuceneTest {
   public void embedded() {
 
     graph.getRawGraph().begin();
-    graph.addVertex("class:City", new Object[] { "name", "London" });
-    graph.addVertex("class:City", new Object[] { "name", "Rome" });
+    graph.addVertex("class:City", "name", "London");
+    graph.addVertex("class:City", "name", "Rome");
 
 
     graph.commit();

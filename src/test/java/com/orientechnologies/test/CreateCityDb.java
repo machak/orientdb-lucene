@@ -26,22 +26,22 @@ import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
-import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
-
-import au.com.bytecode.opencsv.CSVReader;
 
 import com.orientechnologies.common.test.SpeedTestMonoThread;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
+import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OSchema;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 
+import au.com.bytecode.opencsv.CSVReader;
+
 /**
  * Created by enricorisa on 07/04/14.
  */
+@Test(enabled = false)
 public class CreateCityDb extends SpeedTestMonoThread {
   private ODatabaseDocumentTx databaseDocumentTx;
   private static CSVReader    reader;
@@ -124,12 +124,11 @@ public class CreateCityDb extends SpeedTestMonoThread {
 
     String readed = lineReader.readLine();
     String[] nextLine = readed.split("\\t");
-    if (readed != null) {
       ODocument doc = new ODocument("City");
       doc.field("name", nextLine[1]);
       doc.field("country", nextLine[8]);
-      Double lat = ((Double) OType.convert(nextLine[4], Double.class)).doubleValue();
-      Double lng = ((Double) OType.convert(nextLine[5], Double.class)).doubleValue();
+      Double lat = (Double) OType.convert(nextLine[4], Double.class);
+      Double lng = (Double) OType.convert(nextLine[5], Double.class);
       doc.field("latitude", lat);
       doc.field("longitude", lng);
       doc.save();
@@ -138,7 +137,6 @@ public class CreateCityDb extends SpeedTestMonoThread {
         databaseDocumentTx.begin();
       }
       i++;
-    }
 
   }
 
